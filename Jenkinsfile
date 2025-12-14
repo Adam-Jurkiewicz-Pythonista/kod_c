@@ -11,7 +11,7 @@ pipeline {
         stage('Upload do FTP') {
             steps {
                 ftpPublisher(
-                    configName: 'ALX',  // Nazwa konfiguracji FTP z ustawień globalnych
+                    publishers: 'ALX',  // Nazwa konfiguracji FTP z ustawień globalnych
                     transfers: [
                         [
                             $class: 'FtpTransfer',
