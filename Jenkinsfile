@@ -4,28 +4,39 @@ pipeline {
     stages {
         stage('Kompilacja') {
             steps {
-                sh 'gcc -o suma kod.c'
+                sh 'gcc -o suma suma.c'
                 archiveArtifacts artifacts: 'suma', fingerprint: true
             }
         }
         stage('Upload do FTP') {
             steps {
                 ftpPublisher(
-                    publishers: ['ALX'],  // Nazwa konfiguracji FTP z ustawień globalnych
-                    transfers: [
+                    alwaysPublishFromMaster: false,
+                    continueOnError: false,
+                    failOnError: true,
+                    masterNodeName: '',
+                    paramPublish: [parameterName: ''],
+                    publishers: [
                         [
-                            $class: 'FtpTransfer',
-                            sourceFiles: 'suma',
-                            remoteDirectory: '${BUILD_NUMBER}/',
-                            cleanRemote: false,
-                            excludes: '',
-                            flatten: true,
-                            makeEmptyDirs: false,
-                            noDefaultExcludes: false,
-                            patternSeparator: '[, ]+'
+                            $class: 'BapFtpPublisherPlugin',
+                            configName: 'ALX',
+                            verbose: true,
+                            transfers: [
+                                [
+                                    $class: 'FtpTransfer',
+                                    sourceFiles: 'suma',
+                                    remoteDirectory: 'uploads/${BUILD_NUMBER}/',
+                                    cleanRemote: false,
+                                    excludes: '',
+                                    flatten: true,
+                                    makeEmptyDirs: false,
+                                    noDefaultExcludes: false,
+                                    patternSeparator: '[, ]+',
+                                    asciiMode: false
+                                ]
+                            ]
                         ]
-                    ],
-                    verbose: true
+                    ]
                 )
             }
         }
