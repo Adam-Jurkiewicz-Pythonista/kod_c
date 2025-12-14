@@ -1,37 +1,33 @@
-// flask uruchomiony z linii poleceń
-// modyfikacja
 pipeline {
     agent any
     
-    
     stages {
-
-        stage('Checkout') {
+        stage('Kompilacja') {
             steps {
-                checkout scm
+                sh 'gcc -o suma kod.c'
+                archiveArtifacts artifacts: 'suma', fingerprint: true
             }
         }
-        
-        stage('Run with venv') {
-            options {
-                timeout(time: 1, unit: 'MINUTES') 
-                }
-
-            
+        stage('Upload do FTP') {
             steps {
-                script {
-                        sh '''
-                        gcc kod.c
-                        '''
-                }
+                ftpPublisher(
+                    configName: 'ALX',  // Nazwa konfiguracji FTP z ustawień globalnych
+                    transfers: [
+                        [
+                            $class: 'FtpTransfer',
+                            sourceFiles: 'suma',
+                            remoteDirectory: '${BUILD_NUMBER}/',
+                            cleanRemote: false,
+                            excludes: '',
+                            flatten: true,
+                            makeEmptyDirs: false,
+                            noDefaultExcludes: false,
+                            patternSeparator: '[, ]+'
+                        ]
+                    ],
+                    verbose: true
+                )
             }
         }
-    
-        
-        
     }
-    
-
-   
-   
 }
